@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conflicts Dashboard — Bayesian War Probability & Military Capability</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d0d0d;
+  --s1: #141414;
+  --s2: #1c1c1c;
+  --s3: #242424;
+  --border: #2a2a2a;
+  --gold: #c9a84c;
+  --gold-dim: #7a6330;
+  --red: #c0392b;
+  --blue: #2980b9;
+  --green: #27ae60;
+  --text: #e8e0d0;
+  --dim: #7a7060;
+  --accent: #e8c96a;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  min-height: 100vh;
+  overflow-x: hidden;
+  line-height: 1.7;
+}
+
+/* Grain overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 999;
+  opacity: 0.4;
+}
+
+/* Radial glow */
+body::after {
+  content: '';
+  position: fixed;
+  top: -30%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 900px;
+  height: 600px;
+  background: radial-gradient(ellipse at center, rgba(201,168,76,0.06) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* HEADER */
+header {
+  border-bottom: 1px solid var(--border);
+  padding: 28px 48px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+}
+
+.site-wordmark {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.site-wordmark .domain {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+}
+
+.site-wordmark h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--accent);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+nav {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+}
+
+nav a {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--dim);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+nav a:hover { color: var(--accent); }
+
+nav a.nav-cta {
+  color: var(--accent);
+  border: 1px solid var(--gold-dim);
+  padding: 6px 14px;
+  border-radius: 2px;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+nav a.nav-cta:hover {
+  background: var(--gold-dim);
+  border-color: var(--gold);
+  color: #0d0d0d;
+}
+
+nav a:focus-visible,
+nav a.nav-cta:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+/* HERO */
+.hero {
+  position: relative;
+  z-index: 1;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 96px 48px 80px;
+  text-align: center;
+}
+
+.hero-eyebrow {
+  font-size: 9px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+  margin-bottom: 20px;
+}
+
+.hero h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(36px, 6vw, 58px);
+  font-weight: 900;
+  color: var(--text);
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin-bottom: 24px;
+}
+
+.hero h2 em {
+  font-style: italic;
+  color: var(--accent);
+}
+
+.hero p {
+  font-size: 13px;
+  color: var(--dim);
+  max-width: 560px;
+  margin: 0 auto 44px;
+  line-height: 1.8;
+}
+
+.hero-ctas {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--gold-dim);
+  border: 1px solid var(--gold);
+  color: var(--accent);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-decoration: none;
+  padding: 14px 28px;
+  border-radius: 2px;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 24px rgba(201,168,76,0.12), 0 1px 4px rgba(0,0,0,0.5);
+}
+
+.btn-primary:hover {
+  background: #9a7830;
+  color: #fff8e8;
+  box-shadow: 0 8px 32px rgba(201,168,76,0.22), 0 2px 8px rgba(0,0,0,0.6);
+}
+
+.btn-primary:active { transform: translateY(1px); }
+
+.btn-primary:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--dim);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-decoration: none;
+  padding: 14px 28px;
+  border-radius: 2px;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.btn-secondary:hover {
+  border-color: var(--gold-dim);
+  color: var(--accent);
+}
+
+.btn-secondary:active { transform: translateY(1px); }
+
+.btn-secondary:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+/* STAT STRIP */
+.stat-strip {
+  display: flex;
+  justify-content: center;
+  border-bottom: 1px solid var(--border);
+  border-top: 1px solid var(--border);
+  position: relative;
+  z-index: 1;
+}
+
+.stat-item {
+  flex: 1;
+  max-width: 200px;
+  padding: 28px 24px;
+  text-align: center;
+  border-right: 1px solid var(--border);
+}
+
+.stat-item:last-child { border-right: none; }
+
+.stat-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.stat-label {
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+/* CARDS */
+.cards-section {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 80px 48px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.card {
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 36px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-decoration: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.card:hover {
+  border-color: var(--gold-dim);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(201,168,76,0.08);
+}
+
+.card:hover::before { opacity: 1; }
+
+.card:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.card-tag {
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+}
+
+.card-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.card-desc {
+  font-size: 12px;
+  color: var(--dim);
+  line-height: 1.8;
+  flex: 1;
+}
+
+.card-link {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.card-link svg { transition: transform 0.2s; }
+.card:hover .card-link svg { transform: translateX(4px); }
+
+.card.card-featured {
+  grid-column: span 2;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto 1fr auto;
+  column-gap: 40px;
+}
+
+.card.card-featured .card-tag  { grid-column: 1; }
+.card.card-featured .card-title { grid-column: 1; font-size: 28px; }
+.card.card-featured .card-desc  { grid-column: 1; }
+.card.card-featured .card-link  { grid-column: 1; }
+
+.card-badge {
+  grid-column: 2;
+  grid-row: 1 / 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+}
+
+.badge-ring {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 1px solid var(--gold-dim);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 2px;
+  box-shadow: 0 0 40px rgba(201,168,76,0.08);
+}
+
+.badge-ring .br-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1;
+}
+
+.badge-ring .br-label {
+  font-size: 7px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+/* MODEL SECTION */
+.model-section {
+  border-top: 1px solid var(--border);
+  position: relative;
+  z-index: 1;
+}
+
+.model-inner {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 64px 48px;
+}
+
+.section-label {
+  font-size: 9px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+  margin-bottom: 32px;
+}
+
+.model-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.model-card {
+  background: var(--s2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--gold-dim);
+  padding: 20px 22px;
+  border-radius: 2px;
+}
+
+.model-card .mc-name {
+  font-size: 11px;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+
+.model-card .mc-desc {
+  font-size: 11px;
+  color: var(--dim);
+  line-height: 1.7;
+}
+
+/* FOOTER */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 28px 48px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+footer .foot-brand {
+  font-family: 'Playfair Display', serif;
+  font-size: 14px;
+  color: var(--dim);
+  letter-spacing: -0.02em;
+}
+
+footer .foot-meta {
+  font-size: 10px;
+  color: var(--dim);
+  line-height: 1.6;
+  text-align: right;
+}
+
+footer .foot-links {
+  display: flex;
+  gap: 24px;
+}
+
+footer .foot-links a {
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--dim);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+footer .foot-links a:hover { color: var(--accent); }
+
+footer .foot-links a:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+@media (max-width: 700px) {
+  header { padding: 20px 24px; }
+  nav { gap: 16px; }
+  nav .nav-label { display: none; }
+  .hero { padding: 64px 24px 56px; }
+  .stat-strip { flex-wrap: wrap; }
+  .stat-item { max-width: 50%; border-bottom: 1px solid var(--border); }
+  .cards-section { grid-template-columns: 1fr; padding: 48px 24px; }
+  .card.card-featured { grid-column: span 1; grid-template-columns: 1fr; }
+  .card-badge { display: none; }
+  .model-inner { padding: 48px 24px; }
+  .model-grid { grid-template-columns: 1fr; }
+  footer { padding: 24px; flex-direction: column; align-items: flex-start; }
+  footer .foot-meta { text-align: left; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="site-wordmark">
+    <span class="domain">conflictsdashboard.com</span>
+    <h1>Conflicts Dashboard</h1>
+  </div>
+  <nav>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="docs.html">Research</a>
+    <a href="dashboard.html" class="nav-cta">Launch App &rarr;</a>
+  </nav>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <p class="hero-eyebrow">Correlates of War &middot; Bayesian Analysis &middot; 1823&ndash;2010</p>
+  <h2>Quantifying the <em>Probability of War</em></h2>
+  <p>An interactive statistical dashboard combining Bayesian Beta-Binomial updating with logistic regression on military capability data &mdash; built on the COW National Material Capabilities dataset.</p>
+  <div class="hero-ctas">
+    <a href="dashboard.html" class="btn-primary">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><rect x="1" y="1" width="5" height="5" stroke="currentColor" stroke-width="1.2"/><rect x="8" y="1" width="5" height="5" stroke="currentColor" stroke-width="1.2"/><rect x="1" y="8" width="5" height="5" stroke="currentColor" stroke-width="1.2"/><rect x="8" y="8" width="5" height="5" stroke="currentColor" stroke-width="1.2"/></svg>
+      Open Dashboard
+    </a>
+    <a href="docs.html" class="btn-secondary">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2 2h10v10H2z" stroke="currentColor" stroke-width="1.2"/><path d="M4 5h6M4 7h6M4 9h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+      Research &amp; Docs
+    </a>
+  </div>
+</section>
+
+<!-- STAT STRIP -->
+<div class="stat-strip">
+  <div class="stat-item">
+    <div class="stat-num">91</div>
+    <div class="stat-label">Inter-State Wars</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">92</div>
+    <div class="stat-label">Countries</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">187yr</div>
+    <div class="stat-label">Historical Span</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">0.790</div>
+    <div class="stat-label">Logistic AUC</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">6</div>
+    <div class="stat-label">NMC Components</div>
+  </div>
+</div>
+
+<!-- CARDS -->
+<section class="cards-section">
+
+  <a href="dashboard.html" class="card card-featured">
+    <span class="card-tag">Interactive Tool</span>
+    <h3 class="card-title">Bayesian War Probability &amp; NMC Dashboard</h3>
+    <p class="card-desc">Select any country-pair from the COW dataset and watch Bayesian posterior distributions update in real time. Adjust prior beliefs, explore capability ratios across military, industrial, and demographic dimensions, and inspect individual conflict cards with full NMC breakdowns.</p>
+    <span class="card-link">
+      Open dashboard
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </span>
+    <div class="card-badge">
+      <div class="badge-ring">
+        <span class="br-num">v7</span>
+        <span class="br-label">Latest</span>
+      </div>
+    </div>
+  </a>
+
+  <a href="docs.html" class="card">
+    <span class="card-tag">Documentation</span>
+    <h3 class="card-title">Research &amp; Methods</h3>
+    <p class="card-desc">Data sources, model specifications, Bayesian priors, logistic regression details, and open research questions built on the COW dataset.</p>
+    <span class="card-link">
+      Read docs
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </span>
+  </a>
+
+  <a href="https://correlatesofwar.org" target="_blank" rel="noopener noreferrer" class="card">
+    <span class="card-tag">External Dataset</span>
+    <h3 class="card-title">Correlates of War Project</h3>
+    <p class="card-desc">The underlying COW Inter-State War Dataset v4.0 and National Material Capabilities v6.0 used throughout this project, maintained by the COW Project.</p>
+    <span class="card-link">
+      Visit COW Project
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </span>
+  </a>
+
+</section>
+
+<!-- MODEL INFO -->
+<section class="model-section">
+  <div class="model-inner">
+    <p class="section-label">Models Inside the Dashboard</p>
+    <div class="model-grid">
+      <div class="model-card">
+        <div class="mc-name">Bayesian Beta-Binomial</div>
+        <div class="mc-desc">Conjugate prior updating on war outcomes. Produces posterior mean, 95% highest-density interval, and a sequential trace showing how beliefs evolve conflict-by-conflict.</div>
+      </div>
+      <div class="model-card">
+        <div class="mc-name">Logistic Regression &mdash; 5-Component NMC</div>
+        <div class="mc-desc">Standardised military-industrial-demographic ratios mapped through a logistic function. Achieves AUC 0.790 on held-out conflicts from the COW dataset.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span class="foot-brand">Conflicts Dashboard</span>
+  <div class="foot-links">
+    <a href="dashboard.html">Dashboard</a>
+    <a href="docs.html">Research</a>
+  </div>
+  <div class="foot-meta">
+    Data: COW v4.0 / NMC v6.0 &middot; Period 1823&ndash;2010<br>
+    conflictsdashboard.com
+  </div>
+</footer>
+
+</body>
+</html>

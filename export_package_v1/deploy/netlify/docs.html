@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Research & Documentation — Conflicts Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d0d0d;
+  --s1: #141414;
+  --s2: #1c1c1c;
+  --s3: #242424;
+  --border: #2a2a2a;
+  --gold: #c9a84c;
+  --gold-dim: #7a6330;
+  --red: #c0392b;
+  --blue: #2980b9;
+  --green: #27ae60;
+  --text: #e8e0d0;
+  --dim: #7a7060;
+  --accent: #e8c96a;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  min-height: 100vh;
+  overflow-x: hidden;
+  line-height: 1.7;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 999;
+  opacity: 0.4;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  top: -30%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 900px;
+  height: 600px;
+  background: radial-gradient(ellipse at center, rgba(201,168,76,0.05) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* HEADER */
+header {
+  border-bottom: 1px solid var(--border);
+  padding: 28px 48px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+}
+
+.site-wordmark {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.site-wordmark .domain {
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+  text-decoration: none;
+}
+
+.site-wordmark h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--accent);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.site-wordmark a { text-decoration: none; }
+
+nav {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+}
+
+nav a {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--dim);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+nav a:hover { color: var(--accent); }
+nav a.active { color: var(--accent); }
+
+nav a.nav-cta {
+  color: var(--accent);
+  border: 1px solid var(--gold-dim);
+  padding: 6px 14px;
+  border-radius: 2px;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+nav a.nav-cta:hover {
+  background: var(--gold-dim);
+  border-color: var(--gold);
+  color: #0d0d0d;
+}
+
+nav a:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+/* PAGE LAYOUT */
+.page {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 48px;
+  position: relative;
+  z-index: 1;
+  gap: 0;
+  min-height: calc(100vh - 72px);
+}
+
+/* SIDEBAR TOC */
+.toc {
+  border-right: 1px solid var(--border);
+  padding: 48px 32px 48px 0;
+  position: sticky;
+  top: 0;
+  height: calc(100vh - 72px);
+  overflow-y: auto;
+}
+
+.toc-label {
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+  margin-bottom: 20px;
+}
+
+.toc-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.toc-list a {
+  display: block;
+  font-size: 11px;
+  color: var(--dim);
+  text-decoration: none;
+  padding: 5px 8px;
+  border-left: 2px solid transparent;
+  line-height: 1.5;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.toc-list a:hover {
+  color: var(--accent);
+  border-left-color: var(--gold-dim);
+}
+
+.toc-list a:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.toc-list .toc-section {
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--dim);
+  padding: 16px 8px 4px;
+  opacity: 0.6;
+}
+
+/* CONTENT */
+.content {
+  padding: 48px 0 80px 48px;
+}
+
+.page-title {
+  margin-bottom: 8px;
+}
+
+.page-title .eyebrow {
+  font-size: 9px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+  margin-bottom: 12px;
+}
+
+.page-title h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 900;
+  color: var(--text);
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin-bottom: 16px;
+}
+
+.page-title .lead {
+  font-size: 12px;
+  color: var(--dim);
+  max-width: 600px;
+  line-height: 1.8;
+  margin-bottom: 40px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 40px;
+}
+
+/* SECTIONS */
+.doc-section {
+  margin-bottom: 56px;
+}
+
+.doc-section:last-child { margin-bottom: 0; }
+
+.doc-section h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  margin-bottom: 16px;
+  line-height: 1.2;
+  padding-top: 8px;
+}
+
+.doc-section p {
+  font-size: 12px;
+  color: var(--dim);
+  line-height: 1.9;
+  margin-bottom: 16px;
+  max-width: 660px;
+}
+
+.doc-section p:last-child { margin-bottom: 0; }
+
+/* Info boxes */
+.info-box {
+  background: var(--s2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--gold-dim);
+  padding: 16px 20px;
+  border-radius: 2px;
+  margin: 20px 0;
+  font-size: 12px;
+  color: var(--dim);
+  line-height: 1.8;
+}
+
+.info-box strong {
+  color: var(--accent);
+  display: block;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.note-box {
+  background: var(--s2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--green);
+  padding: 16px 20px;
+  border-radius: 2px;
+  margin: 20px 0;
+  font-size: 12px;
+  color: var(--dim);
+  line-height: 1.8;
+}
+
+.note-box strong {
+  color: #27ae60;
+  display: block;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+/* Component table */
+.comp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  margin: 20px 0;
+}
+
+.comp-table th {
+  text-align: left;
+  color: var(--dim);
+  font-size: 8px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  font-weight: 400;
+}
+
+.comp-table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid #1a1a1a;
+  color: var(--dim);
+  vertical-align: top;
+  line-height: 1.6;
+}
+
+.comp-table td:first-child {
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+/* Formula display */
+.formula {
+  background: var(--s2);
+  border: 1px solid var(--border);
+  padding: 16px 20px;
+  border-radius: 2px;
+  margin: 20px 0;
+  font-size: 12px;
+  line-height: 2;
+}
+
+.formula .eq {
+  color: var(--accent);
+  font-size: 13px;
+}
+
+.formula .comment {
+  color: var(--dim);
+  font-size: 11px;
+}
+
+/* Research ideas */
+.ideas-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.ideas-list li {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.idea-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--gold-dim);
+  line-height: 1;
+  min-width: 28px;
+  padding-top: 2px;
+}
+
+.idea-body {
+  flex: 1;
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 16px 18px;
+}
+
+.idea-body .idea-title {
+  font-size: 12px;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+
+.idea-body .idea-desc {
+  font-size: 11px;
+  color: var(--dim);
+  line-height: 1.8;
+}
+
+/* External link */
+a.ext-link {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid var(--gold-dim);
+  transition: border-color 0.2s, color 0.2s;
+}
+
+a.ext-link:hover {
+  color: var(--text);
+  border-bottom-color: var(--gold);
+}
+
+/* Code spans */
+code {
+  background: var(--s2);
+  border: 1px solid var(--border);
+  padding: 1px 6px;
+  border-radius: 2px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--accent);
+}
+
+/* Section anchor offset */
+.anchor { scroll-margin-top: 32px; }
+
+/* FOOTER */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 28px 48px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+footer .foot-brand {
+  font-family: 'Playfair Display', serif;
+  font-size: 14px;
+  color: var(--dim);
+}
+
+footer .foot-links {
+  display: flex;
+  gap: 24px;
+}
+
+footer .foot-links a {
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--dim);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+footer .foot-links a:hover { color: var(--accent); }
+
+footer .foot-meta {
+  font-size: 10px;
+  color: var(--dim);
+  text-align: right;
+  line-height: 1.6;
+}
+
+@media (max-width: 800px) {
+  header { padding: 20px 24px; }
+  .page { grid-template-columns: 1fr; padding: 0 24px; }
+  .toc { display: none; }
+  .content { padding: 40px 0 64px; }
+  footer { padding: 24px; flex-direction: column; align-items: flex-start; }
+  footer .foot-meta { text-align: left; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="site-wordmark">
+    <a href="index.html" class="domain">conflictsdashboard.com</a>
+    <h1><a href="index.html" style="text-decoration:none;color:inherit;">Conflicts Dashboard</a></h1>
+  </div>
+  <nav>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="docs.html" class="active">Research</a>
+    <a href="dashboard.html" class="nav-cta">Launch App &rarr;</a>
+  </nav>
+</header>
+
+<div class="page">
+
+  <!-- SIDEBAR TOC -->
+  <aside class="toc">
+    <p class="toc-label">Contents</p>
+    <ul class="toc-list">
+      <li class="toc-section">Data</li>
+      <li><a href="#dataset">COW Dataset</a></li>
+      <li><a href="#nmc">NMC Components</a></li>
+
+      <li class="toc-section">Models</li>
+      <li><a href="#bayesian">Bayesian Beta-Binomial</a></li>
+      <li><a href="#logistic">Logistic Regression</a></li>
+
+      <li class="toc-section">Using the Dashboard</li>
+      <li><a href="#prior">Setting Priors</a></li>
+      <li><a href="#country-pair">Country Pairs</a></li>
+
+      <li class="toc-section">Open Questions</li>
+      <li><a href="#research">Research Ideas</a></li>
+
+      <li class="toc-section">Codebase</li>
+      <li><a href="#codebase">File Reference</a></li>
+    </ul>
+  </aside>
+
+  <!-- CONTENT -->
+  <main class="content">
+
+    <div class="page-title">
+      <p class="eyebrow">Research &amp; Documentation</p>
+      <h2>Methods, Data &amp; Open Questions</h2>
+      <p class="lead">This page documents the data sources, statistical models, and design decisions behind the Conflicts Dashboard, and lists open research directions for extending the project.</p>
+    </div>
+
+    <!-- DATASET -->
+    <section class="doc-section">
+      <h3 id="dataset" class="anchor">COW Dataset</h3>
+      <p>The dashboard draws on two datasets maintained by the <a href="https://correlatesofwar.org" class="ext-link" target="_blank" rel="noopener">Correlates of War (COW) Project</a>, a long-running scientific effort to identify and measure the correlates of war across recorded history.</p>
+
+      <table class="comp-table">
+        <thead>
+          <tr>
+            <th>Dataset</th>
+            <th>Version</th>
+            <th>Coverage</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Inter-State War Dataset</td>
+            <td>v4.0</td>
+            <td>1823&ndash;2010</td>
+            <td>Records of militarised inter-state wars, participants, outcomes, and battle deaths.</td>
+          </tr>
+          <tr>
+            <td>National Material Capabilities</td>
+            <td>v6.0</td>
+            <td>1816&ndash;2016</td>
+            <td>Annual estimates of six military-industrial-demographic capability components for each state.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>War outcome coding follows COW conventions: a state is recorded as <em>Winner</em>, <em>Loser</em>, or <em>Draw</em> based on whether it achieved its primary war aims. The dashboard includes 91 inter-state wars and 92 belligerent states over the combined period 1823&ndash;2010.</p>
+    </section>
+
+    <!-- NMC -->
+    <section class="doc-section">
+      <h3 id="nmc" class="anchor">NMC Components</h3>
+      <p>The National Material Capabilities index decomposes state power into six annual components. The dashboard uses the ratio of each component between the initiator and the target state as model inputs.</p>
+
+      <table class="comp-table">
+        <thead>
+          <tr>
+            <th>Component</th>
+            <th>Abbreviation</th>
+            <th>Concept</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Military Personnel</td>
+            <td>milper</td>
+            <td>Total armed forces personnel (thousands)</td>
+          </tr>
+          <tr>
+            <td>Military Expenditure</td>
+            <td>milex</td>
+            <td>Military spending in constant USD</td>
+          </tr>
+          <tr>
+            <td>Iron &amp; Steel Production</td>
+            <td>irst</td>
+            <td>Industrial war-making capacity (thousands of tonnes)</td>
+          </tr>
+          <tr>
+            <td>Energy Consumption</td>
+            <td>pec</td>
+            <td>Primary energy consumption (coal-tonne equivalents)</td>
+          </tr>
+          <tr>
+            <td>Total Population</td>
+            <td>tpop</td>
+            <td>Total population (thousands)</td>
+          </tr>
+          <tr>
+            <td>Urban Population</td>
+            <td>upop</td>
+            <td>Population in cities &gt;25,000 (thousands)</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="info-box">
+        <strong>Composite Index (CINC)</strong>
+        The Composite Index of National Capability (CINC) score is each state's share of the total world capability across all six components in a given year. It appears in the dashboard but is not used directly as a model predictor &mdash; individual component ratios are used instead to preserve signal.
+      </div>
+    </section>
+
+    <!-- BAYESIAN -->
+    <section class="doc-section">
+      <h3 id="bayesian" class="anchor">Bayesian Beta-Binomial Model</h3>
+      <p>The dashboard fits a Beta-Binomial conjugate model to the observed win/loss record of each country-pair. This allows the user to start with prior beliefs about the win probability and update those beliefs sequentially as conflicts are observed.</p>
+
+      <div class="formula">
+        <div class="eq">Prior: &nbsp;&nbsp;&nbsp; P(Win) ~ Beta(&alpha;, &beta;)</div>
+        <div class="eq">Update: &nbsp; Posterior = Beta(&alpha; + wins, &beta; + losses)</div>
+        <div class="comment">&alpha; = prior wins &nbsp;|&nbsp; &beta; = prior losses &nbsp;|&nbsp; 95% HDI via Beta quantiles</div>
+      </div>
+
+      <p>The prior parameters <code>&alpha;</code> and <code>&beta;</code> are exposed as sliders in the sidebar. Setting <code>&alpha; = &beta; = 1</code> produces a flat (uniform) prior, expressing complete prior ignorance. Increasing either parameter expresses a stronger prior belief in favour of wins or losses respectively.</p>
+
+      <p>The sequential trace chart shows how the posterior mean moves after each war in the selected country-pair's history, illustrating how evidence accumulates and how sensitive the final estimate is to the starting prior.</p>
+    </section>
+
+    <!-- LOGISTIC -->
+    <section class="doc-section">
+      <h3 id="logistic" class="anchor">Logistic Regression Model</h3>
+      <p>A logistic regression model is trained on five of the six NMC component ratios to predict binary war outcome (Win vs. Loss; draws are excluded). Inputs are standardised (zero mean, unit variance) before fitting.</p>
+
+      <div class="formula">
+        <div class="eq">P(Win) = &sigma;(w&middot;X + b)</div>
+        <div class="comment">X = standardised log-ratios of 5 NMC components &nbsp;|&nbsp; &sigma; = logistic function</div>
+        <div class="comment">AUC = 0.790 on out-of-sample conflicts</div>
+      </div>
+
+      <p>The model achieves an AUC of 0.790 on held-out conflicts, meaning it correctly ranks a randomly chosen winner above a randomly chosen loser ~79% of the time. This is a meaningful but imperfect signal &mdash; capability alone does not determine war outcomes.</p>
+
+      <div class="note-box">
+        <strong>Caveat</strong>
+        Logistic regression captures linear relationships in capability space. Non-linearities (e.g., nuclear deterrence thresholds, alliance effects, terrain) are not modelled. The AUC reflects the predictive power of material capability data alone, not a complete theory of war.
+      </div>
+    </section>
+
+    <!-- PRIOR -->
+    <section class="doc-section">
+      <h3 id="prior" class="anchor">Setting Priors</h3>
+      <p>The prior panel lets you inject domain knowledge before observing any data. A few useful starting points:</p>
+
+      <table class="comp-table">
+        <thead>
+          <tr>
+            <th>Prior Type</th>
+            <th>&alpha;</th>
+            <th>&beta;</th>
+            <th>Interpretation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Uniform / ignorant</td>
+            <td>1</td>
+            <td>1</td>
+            <td>No prior knowledge; posterior is driven entirely by data.</td>
+          </tr>
+          <tr>
+            <td>Slight win-bias</td>
+            <td>2</td>
+            <td>1</td>
+            <td>Express a weak belief that initiators win slightly more often.</td>
+          </tr>
+          <tr>
+            <td>Historical base-rate</td>
+            <td>~1.4</td>
+            <td>~1</td>
+            <td>Encode the COW-wide initiator win rate of ~58% as a prior.</td>
+          </tr>
+          <tr>
+            <td>Skeptical</td>
+            <td>5</td>
+            <td>5</td>
+            <td>Strong prior toward 50/50; requires substantial data to move.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- COUNTRY PAIR -->
+    <section class="doc-section">
+      <h3 id="country-pair" class="anchor">Country Pairs</h3>
+      <p>The dashboard shows all conflicts in which both the selected initiator and target appear in the COW dataset. Each conflict card shows:</p>
+      <p>&mdash; War name, year, and initiator outcome<br>
+         &mdash; The opposing state and its role<br>
+         &mdash; Bar charts for all six NMC ratios at the time of conflict<br>
+         &mdash; The logistic model's predicted win probability given those ratios</p>
+      <p>Selecting different country-pairs re-runs both the Bayesian update sequence and the capability charts. The stats strip at the top of the dashboard updates to reflect the new country-pair's historical record.</p>
+    </section>
+
+    <!-- RESEARCH IDEAS -->
+    <section class="doc-section">
+      <h3 id="research" class="anchor">Research Ideas</h3>
+      <p>The following are open directions for extending this project, organised roughly by difficulty.</p>
+
+      <ul class="ideas-list">
+        <li>
+          <span class="idea-num">01</span>
+          <div class="idea-body">
+            <div class="idea-title">Alliance Effects</div>
+            <div class="idea-desc">Incorporate COW Formal Alliance Dataset to model how alliance portfolios change predicted win probabilities. Does the capability of allies significantly improve AUC beyond bilateral NMC ratios alone?</div>
+          </div>
+        </li>
+        <li>
+          <span class="idea-num">02</span>
+          <div class="idea-body">
+            <div class="idea-title">Temporal Drift in Component Weights</div>
+            <div class="idea-desc">Fit the logistic model on rolling 40-year windows to test whether the predictive weight of military expenditure vs. industrial capacity shifts across historical eras (e.g., pre-WWI industrialisation vs. Cold War).</div>
+          </div>
+        </li>
+        <li>
+          <span class="idea-num">03</span>
+          <div class="idea-body">
+            <div class="idea-title">Hierarchical Bayesian Model by Region</div>
+            <div class="idea-desc">Replace the flat Beta-Binomial with a hierarchical model that shares information across regional country-pairs (e.g., European, Middle Eastern, East Asian dyads). This would partially pool estimates to reduce variance for data-sparse pairs.</div>
+          </div>
+        </li>
+        <li>
+          <span class="idea-num">04</span>
+          <div class="idea-body">
+            <div class="idea-title">Draws as a Separate Outcome</div>
+            <div class="idea-desc">The current model treats draws as missing data. Extending to a Dirichlet-Multinomial model (Win / Draw / Loss) would let the dashboard estimate draw probability alongside win probability and visualise the full outcome simplex.</div>
+          </div>
+        </li>
+        <li>
+          <span class="idea-num">05</span>
+          <div class="idea-body">
+            <div class="idea-title">Nuclear Threshold Indicator</div>
+            <div class="idea-desc">Overlay a binary nuclear-state flag on the NMC ratio charts. Test whether nuclear status is a statistically significant predictor of war outcomes in the logistic model, and whether it moderates the capability ratio effect.</div>
+          </div>
+        </li>
+        <li>
+          <span class="idea-num">06</span>
+          <div class="idea-body">
+            <div class="idea-title">Duration and Casualty Prediction</div>
+            <div class="idea-desc">Extend beyond win/loss binary outcomes to model war duration and battle deaths as separate targets. NMC ratios may predict magnitude of conflict differently than direction of outcome.</div>
+          </div>
+        </li>
+        <li>
+          <span class="idea-num">07</span>
+          <div class="idea-body">
+            <div class="idea-title">Live Capability Estimates</div>
+            <div class="idea-desc">The COW NMC dataset ends at 2010. Sourcing post-2010 capability data from SIPRI, World Bank, and IISS would allow the dashboard to produce current-year estimates rather than relying on extrapolation from the last known year.</div>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <!-- CODEBASE -->
+    <section class="doc-section">
+      <h3 id="codebase" class="anchor">File Reference</h3>
+      <p>The entire dashboard is a single self-contained HTML file. All data, logic, and styles are embedded inline — no build step, no external dependencies beyond D3.js and Google Fonts.</p>
+
+      <table class="comp-table">
+        <thead>
+          <tr>
+            <th>Search Target</th>
+            <th>Finds</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>const DATA = {</code></td>
+            <td>All embedded COW data objects</td>
+          </tr>
+          <tr>
+            <td><code>function draw</code></td>
+            <td>D3 chart drawing functions</td>
+          </tr>
+          <tr>
+            <td><code>function logGamma</code></td>
+            <td>Bayesian math (Beta distribution)</td>
+          </tr>
+          <tr>
+            <td><code>function pWinMulti</code></td>
+            <td>Logistic regression prediction</td>
+          </tr>
+          <tr>
+            <td><code>:root {</code></td>
+            <td>CSS colour variables</td>
+          </tr>
+          <tr>
+            <td><code>&lt;header&gt;</code></td>
+            <td>Page header and title</td>
+          </tr>
+          <tr>
+            <td><code>COW_WAR_NAMES</code></td>
+            <td>War name lookup map</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="info-box">
+        <strong>Editing Tip</strong>
+        The file is ~367 KB of readable HTML/CSS/JS. Install the Prettier extension in VS Code, then right-click and choose "Format Document" to auto-indent the minified JS before editing.
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <span class="foot-brand">Conflicts Dashboard</span>
+  <div class="foot-links">
+    <a href="index.html">Home</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="docs.html">Research</a>
+  </div>
+  <div class="foot-meta">
+    Data: COW v4.0 / NMC v6.0 &middot; Period 1823&ndash;2010<br>
+    conflictsdashboard.com
+  </div>
+</footer>
+
+</body>
+</html>
