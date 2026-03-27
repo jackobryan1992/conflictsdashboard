@@ -17,6 +17,9 @@
 body{background:var(--bg);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:12px;min-height:100vh;overflow-x:hidden;}
 body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");pointer-events:none;z-index:999;opacity:0.4;}
 header{border-bottom:1px solid var(--border);padding:24px 36px 18px;display:flex;align-items:flex-end;gap:20px;}
+.home-btn{display:inline-flex;align-items:center;gap:7px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--dim);text-decoration:none;border:1px solid var(--border);padding:6px 12px;border-radius:2px;flex-shrink:0;transition:color .2s,border-color .2s;align-self:center;}
+.home-btn:hover{color:var(--accent);border-color:var(--gold-dim);}
+.home-btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
 header h1{font-family:'Playfair Display',serif;font-size:26px;font-weight:900;color:var(--accent);letter-spacing:-.5px;line-height:1;}
 header .sub{color:var(--dim);font-size:10px;margin-top:4px;letter-spacing:2px;text-transform:uppercase;}
 .hmeta{margin-left:auto;text-align:right;color:var(--dim);font-size:10px;line-height:1.8;}
@@ -125,7 +128,7 @@ svg text{font-family:'IBM Plex Mono',monospace;}
 </head>
 <body>
 <header>
-  <a href="index.html" style="display:inline-flex;align-items:center;gap:7px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#7a7060;text-decoration:none;border:1px solid #2a2a2a;padding:6px 12px;border-radius:2px;flex-shrink:0;transition:color .2s,border-color .2s;" onmouseover="this.style.color='#e8c96a';this.style.borderColor='#7a6330';" onmouseout="this.style.color='#7a7060';this.style.borderColor='#2a2a2a';">&#8592; Home</a>
+  <a href="index.html" class="home-btn">&#8592; Home</a>
   <div>
     <h1>Bayesian War Probability &amp; Military Capability</h1>
     <div class="sub">Beta–Binomial · COW Directed Dyadic Dataset 1823–2010 · NMC v6.0 · Corrected Models</div>
