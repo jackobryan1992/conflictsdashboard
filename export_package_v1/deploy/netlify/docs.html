@@ -524,8 +524,6 @@ footer .foot-meta {
       <li class="toc-section">Open Questions</li>
       <li><a href="#research">Research Ideas</a></li>
 
-      <li class="toc-section">Codebase</li>
-      <li><a href="#codebase">File Reference</a></li>
     </ul>
   </aside>
 
@@ -784,56 +782,6 @@ footer .foot-meta {
           </div>
         </li>
       </ul>
-    </section>
-
-    <!-- CODEBASE -->
-    <section class="doc-section">
-      <h3 id="codebase" class="anchor">File Reference</h3>
-      <p>The entire dashboard is a single self-contained HTML file. All data, logic, and styles are embedded inline — no build step, no external dependencies beyond D3.js and Google Fonts.</p>
-
-      <table class="comp-table">
-        <thead>
-          <tr>
-            <th>Search Target</th>
-            <th>Finds</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><code>const DATA = {</code></td>
-            <td>All embedded COW data objects</td>
-          </tr>
-          <tr>
-            <td><code>function draw</code></td>
-            <td>D3 chart drawing functions</td>
-          </tr>
-          <tr>
-            <td><code>function logGamma</code></td>
-            <td>Bayesian math (Beta distribution)</td>
-          </tr>
-          <tr>
-            <td><code>function pWinMulti</code></td>
-            <td>Logistic regression prediction</td>
-          </tr>
-          <tr>
-            <td><code>:root {</code></td>
-            <td>CSS colour variables</td>
-          </tr>
-          <tr>
-            <td><code>&lt;header&gt;</code></td>
-            <td>Page header and title</td>
-          </tr>
-          <tr>
-            <td><code>COW_WAR_NAMES</code></td>
-            <td>War name lookup map</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <div class="info-box">
-        <strong>Editing Tip</strong>
-        The file is ~367 KB of readable HTML/CSS/JS. Install the Prettier extension in VS Code, then right-click and choose "Format Document" to auto-indent the minified JS before editing.
-      </div>
     </section>
 
   </main>
