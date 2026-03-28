@@ -543,9 +543,8 @@ footer .foot-links a:focus-visible {
 
 <!-- HERO -->
 <section class="hero">
-  <p class="hero-eyebrow">Correlates of War &middot; Bayesian Analysis &middot; 1823&ndash;2010</p>
-  <h2>Quantifying the <em>Probability of War</em></h2>
-  <p>An interactive statistical dashboard combining Bayesian Beta-Binomial updating with logistic regression on military capability data &mdash; built on the COW National Material Capabilities dataset.</p>
+  <h2>Quantifying the <em>Probabilities of Conflicts</em></h2>
+  <p>An interactive statistical dashboard.</p>
   <div class="hero-ctas">
     <a href="dashboard.html" class="btn-primary">
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><rect x="1" y="1" width="5" height="5" stroke="currentColor" stroke-width="1.2"/><rect x="8" y="1" width="5" height="5" stroke="currentColor" stroke-width="1.2"/><rect x="1" y="8" width="5" height="5" stroke="currentColor" stroke-width="1.2"/><rect x="8" y="8" width="5" height="5" stroke="currentColor" stroke-width="1.2"/></svg>
@@ -571,14 +570,6 @@ footer .foot-links a:focus-visible {
   <div class="stat-item">
     <div class="stat-num">187yr</div>
     <div class="stat-label">Historical Span</div>
-  </div>
-  <div class="stat-item">
-    <div class="stat-num">0.790</div>
-    <div class="stat-label">Logistic AUC</div>
-  </div>
-  <div class="stat-item">
-    <div class="stat-num">6</div>
-    <div class="stat-label">NMC Components</div>
   </div>
 </div>
 
@@ -624,21 +615,6 @@ footer .foot-links a:focus-visible {
 </section>
 
 <!-- MODEL INFO -->
-<section class="model-section">
-  <div class="model-inner">
-    <p class="section-label">Models Inside the Dashboard</p>
-    <div class="model-grid">
-      <div class="model-card">
-        <div class="mc-name">Bayesian Beta-Binomial</div>
-        <div class="mc-desc">Conjugate prior updating on war outcomes. Produces posterior mean, 95% highest-density interval, and a sequential trace showing how beliefs evolve conflict-by-conflict.</div>
-      </div>
-      <div class="model-card">
-        <div class="mc-name">Logistic Regression &mdash; 5-Component NMC</div>
-        <div class="mc-desc">Standardised military-industrial-demographic ratios mapped through a logistic function. Achieves AUC 0.790 on held-out conflicts from the COW dataset.</div>
-      </div>
-    </div>
-  </div>
-</section>
 
 <!-- FOOTER -->
 <footer>
@@ -648,7 +624,6 @@ footer .foot-links a:focus-visible {
     <a href="docs.html">Research</a>
   </div>
   <div class="foot-meta">
-    Data: COW v4.0 / NMC v6.0 &middot; Period 1823&ndash;2010<br>
     conflictsdashboard.com
   </div>
 </footer>
