@@ -133,11 +133,6 @@ svg text{font-family:'IBM Plex Mono',monospace;}
   <a href="docs.html" class="home-btn">Research</a>
   <div>
     <h1>Bayesian War Probability &amp; Military Capability</h1>
-    <div class="sub">Beta–Binomial · COW Directed Dyadic Dataset 1823–2010 · NMC v6.0 · Corrected Models</div>
-  </div>
-  <div class="hmeta">
-    92 countries · 91 wars · 6 NMC components<br>
-    5-component logistic model (AUC 0.790) · Bayesian Beta–Binomial · COW 1823–2010
   </div>
 </header>
 
@@ -174,13 +169,9 @@ svg text{font-family:'IBM Plex Mono',monospace;}
       <div style="color:var(--dim);font-size:8px;letter-spacing:2px;text-transform:uppercase;margin-bottom:5px">NMC Win Probability — Corrected</div>
       <div class="eq" style="font-size:10px">P(win) = σ(β·ratio + c)</div>
       <div style="font-size:9px;color:var(--dim);margin-top:6px;line-height:1.8;">
-        <span style="color:#27ae60">✓ 5-component model</span> (AUC 0.790)<br>
-        <span style="color:#27ae60">  milex + milper + irst + pec + tpop</span><br>
-        <span style="font-size:9px">CINC excluded — it is an average<br>of its own inputs and would cause<br>multicollinearity if included.</span>
+        <span style="color:#27ae60">✓ 5-component model</span><br>
+        <span style="color:#27ae60">  milex + milper + irst + pec + tpop</span>
       </div>
-    </div>
-    <div class="note-box">
-      <strong>Why CINC was removed:</strong> CINC = mean of all 6 component shares. Adding it alongside its own inputs inflates apparent predictive power through redundancy. The corrected 5-component model (r=0.755) outperforms the flawed CINC+components model (r=0.739) and is statistically honest.
     </div>
     <div class="sb-section" style="margin-top:16px">
       <label>Compare Top Countries</label>
@@ -466,7 +457,7 @@ function probGaugeHTML(p, label, auc){
   const pct=Math.round(p*100);
   const col=p>.65?'#27ae60':p<.35?'#c0392b':p>.5?'#c9a84c':'#e67e22';
   return `<div class="prob-block">
-    <div class="prob-label">${label} <span class="model-tag improved">AUC ${auc}</span></div>
+    <div class="prob-label">${label}</div>
     <div class="prob-number" style="color:${col};margin-top:4px">${pct}%</div>
   </div>`;
 }
@@ -499,7 +490,7 @@ function renderConflicts(){
         const ratioMap = {};
         M.multi_features.forEach(f => { ratioMap[f] = (w.ratios||{})[f.replace('_ratio','')]; });
         const pm = pWinMulti(ratioMap);
-        const gaugeMulti = probGaugeHTML(pm, '5-component model', '0.790');
+        const gaugeMulti = probGaugeHTML(pm, '5-component model probability of victory', '0.790');
         const missingMsg = pm===null
           ? `<div class="prob-missing">Multi-var model requires milex, milper, irst, pec &amp; tpop. One or more missing for this dyad.</div>`
           : '';
@@ -529,8 +520,6 @@ function renderConflicts(){
           <div class="cf-prob">
             ${gaugeMulti||missingMsg}
             <div class="prob-desc">
-              Logistic regression on 216 decisive dyads (deduplicated).<br>
-              Multi-var uses milex+milper+irst+pec+tpop — <strong style="color:#27ae60">CINC excluded</strong> to avoid double-counting its own components.<br>
               <span style="color:var(--gold-dim)">Actual: <strong style="color:${o==='Win'?'var(--green)':o==='Loss'?'var(--red)':'var(--gold)'}">${o}</strong></span>
             </div>
           </div>
